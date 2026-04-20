@@ -2,9 +2,9 @@ import os
 import json
 from flask import Flask, jsonify, send_from_directory
 
-app = Flask(__name__, static_folder="static")
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
+
 DATA_DIR = os.path.join(BASE_DIR, "data")
 IMAGES_DIR = os.path.join(DATA_DIR, "images")
 DATA_FILE = os.path.join(DATA_DIR, "rebuses.json")
@@ -17,7 +17,7 @@ def load_data():
 
 @app.route("/")
 def index():
-    return send_from_directory("static", "menu.html")
+    return send_from_directory(app.static_folder, "menu.html")
 
 
 @app.route("/api/data", methods=["GET"])

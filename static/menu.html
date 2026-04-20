@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Советские Ребусы</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --paper:       #f4e8c1;
+      --paper-light: #fff8e7;
+      --paper-dark:  #e8d9a2;
+      --red:         #8b1a1a;
+      --red-bright:  #c02020;
+      --red-deep:    #5c0f0f;
+      --gold:        #d4a437;
+      --gold-bright: #ffd34d;
+      --gold-dark:   #a67e1e;
+      --brown:       #3a2a0a;
+      --brown-soft:  #6b4e1a;
+      --wheat:       #e6c878;
+      --green:       #3f6b2a;
+    }
+
+    html, body {
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--brown);
+      background: var(--paper);
+      min-height: 100vh;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,0.35), transparent 40%),
+        radial-gradient(circle at 80% 90%, rgba(139,26,26,0.08), transparent 50%),
+        repeating-linear-gradient(
+          45deg,
+          rgba(139,26,26,0.02) 0 2px,
+          transparent 2px 14px
+        ),
+        var(--paper);
+    }
+
+    /* === HEADER === */
+    header {
+      background:
+        linear-gradient(180deg, var(--red) 0%, var(--red-deep) 100%);
+      color: var(--paper);
+      padding: 28px 30px 34px;
+      position: relative;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      border-bottom: 4px solid var(--gold);
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0 18px,
+          rgba(255,255,255,0.04) 18px 19px
+        );
+      pointer-events: none;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      position: relative;
+    }
+
+    .emblem {
+      width: 74px;
+      height: 74px;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .emblem .star {
+      font-size: 56px;
+      color: var(--gold-bright);
+      line-height: 1;
+      text-shadow:
+        0 0 14px rgba(255,215,77,0.45),
+        2px 2px 0 var(--red-deep);
+      animation: twinkle 4s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50%      { transform: scale(1.06); filter: brightness(1.15); }
+    }
+
+    .header-text h1 {
+      font-size: 34px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      font-weight: 900;
+      text-shadow: 2px 2px 0 var(--red-deep);
+    }
+
+    .header-text .subtitle {
+      font-size: 14px;
+      letter-spacing: 3px;
+      color: var(--gold-bright);
+      margin-top: 4px;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .total-progress {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.25);
+      border: 2px solid var(--gold);
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-size: 14px;
+      letter-spacing: 1.5px;
+    }
+
+    .total-progress strong {
+      color: var(--gold-bright);
+      font-size: 20px;
+    }
+
+    /* === LEGEND === */
+    .legend-bar {
+      background: var(--paper-light);
+      border-bottom: 2px solid var(--wheat);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      color: var(--brown-soft);
+    }
+
+    .legend-swatch {
+      width: 32px;
+      height: 36px;
+      position: relative;
+    }
+
+    .legend-swatch .hex {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    }
+
+    /* === STATS BAR === */
+    .stats-bar {
+      max-width: 1200px;
+      margin: 22px auto 0;
+      padding: 0 22px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .stat-card {
+      position: relative;
+      background: var(--paper-light);
+      border: 2px solid var(--wheat);
+      border-radius: 8px;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.08),
+        inset 0 0 0 3px var(--paper-light),
+        inset 0 0 0 4px var(--gold);
+      padding: 16px 14px 14px;
+      text-align: center;
+    }
+
+    .stat-card::before {
+      content: "★";
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      color: var(--gold-dark);
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .stat-card::after {
+      content: "★";
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      color: var(--gold-dark);
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brown-soft);
+      margin-bottom: 6px;
+      line-height: 1.3;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 1px 1px 0 rgba(212,164,55,0.35);
+      line-height: 1;
+    }
+
+    /* === CONTAINER === */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 34px 22px 80px;
+    }
+
+    /* === CATEGORY === */
+    .category {
+      margin-bottom: 46px;
+      background: var(--paper-light);
+      border: 2px solid var(--wheat);
+      border-radius: 10px;
+      box-shadow:
+        0 3px 8px rgba(0,0,0,0.08),
+        inset 0 0 0 4px var(--paper-light),
+        inset 0 0 0 5px var(--gold);
+      overflow: hidden;
+    }
+
+    .category-ribbon {
+      position: relative;
+      background:
+        linear-gradient(180deg, var(--red-bright) 0%, var(--red) 50%, var(--red-deep) 100%);
+      color: var(--paper);
+      padding: 16px 28px 16px 50px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .category-ribbon::before {
+      content: "★";
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold-bright);
+      font-size: 22px;
+      text-shadow: 1px 1px 0 var(--red-deep);
+    }
+
+    .category-ribbon h2 {
+      font-size: 22px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      flex: 1;
+      text-shadow: 1px 1px 0 var(--red-deep);
+    }
+
+    .category-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .category-progress .count {
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--gold-bright);
+      white-space: nowrap;
+    }
+
+    .progress-bar {
+      width: 140px;
+      height: 10px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-bright), var(--gold));
+      transition: width 0.4s ease;
+    }
+
+    .category-body {
+      padding: 28px 22px;
+    }
+
+    .rebus-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 20px 16px;
+      justify-items: center;
+    }
+
+    .rebus-empty {
+      color: var(--brown-soft);
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    /* === HEXAGON TILE === */
+    .tile {
+      width: 100px;
+      height: 112px;
+      position: relative;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+      transition: transform 0.2s;
+      outline: none;
+    }
+
+    .tile:hover { transform: translateY(-3px) scale(1.05); }
+    .tile:active { transform: translateY(-1px) scale(1.02); }
+    .tile:focus-visible .hex-inner { box-shadow: 0 0 0 3px var(--gold-bright); }
+
+    .hex-outer {
+      width: 100%;
+      height: 100%;
+      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 3px 3px rgba(0,0,0,0.25));
+    }
+
+    .hex-inner {
+      width: 92%;
+      height: 92%;
+      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      letter-spacing: 1px;
+      font-size: 34px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* State: not-started — cream, dashed red outer ring, red number */
+    .tile.state-new .hex-outer  { background: var(--red); }
+    .tile.state-new .hex-inner  {
+      background:
+        radial-gradient(circle at 50% 30%, var(--paper-light) 0%, var(--paper-dark) 100%);
+      color: var(--red);
+    }
+    .tile.state-new .hex-inner::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+      border: 2px dashed var(--red);
+      /* emulate dashed inside clip-path via outline + mask */
+      background:
+        repeating-linear-gradient(45deg,
+          transparent 0 6px,
+          rgba(139,26,26,0.12) 6px 7px);
+      pointer-events: none;
+    }
+
+    /* State: opened — wheat-gold ring, red number, small bookmark */
+    .tile.state-open .hex-outer {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold-dark) 100%);
+    }
+    .tile.state-open .hex-inner {
+      background:
+        radial-gradient(circle at 50% 30%, #fff5d9 0%, var(--wheat) 100%);
+      color: var(--red-deep);
+    }
+    .tile.state-open .hex-inner::after {
+      content: "…";
+      position: absolute;
+      bottom: 16px;
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: var(--red);
+      font-weight: bold;
+    }
+
+    /* State: solved — Soviet red with gold number + star corner */
+    .tile.state-solved .hex-outer {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+    }
+    .tile.state-solved .hex-inner {
+      background:
+        radial-gradient(circle at 50% 30%, var(--red-bright) 0%, var(--red-deep) 100%);
+      color: var(--gold-bright);
+      text-shadow: 1px 1px 0 var(--red-deep);
+    }
+    .tile.state-solved .hex-inner::before {
+      content: "★";
+      position: absolute;
+      top: 12px;
+      font-size: 16px;
+      color: var(--gold-bright);
+      opacity: 0.85;
+    }
+    .tile.state-solved .hex-inner::after {
+      content: "";
+      position: absolute;
+      bottom: 14px;
+      width: 46px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+
+    .tile .state-label {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: -14px;
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brown-soft);
+      pointer-events: none;
+    }
+
+    .tile.state-solved .state-label { color: var(--green); font-weight: bold; }
+    .tile.state-open    .state-label { color: var(--gold-dark); }
+    .tile.state-new     .state-label { color: var(--brown-soft); opacity: 0.75; }
+
+    /* === MODAL (play) === */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20,10,0,0.78);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--paper);
+      border: 4px solid var(--red);
+      border-radius: 12px;
+      padding: 28px 26px 30px;
+      max-width: 640px;
+      width: 100%;
+      position: relative;
+      box-shadow:
+        0 0 0 2px var(--gold) inset,
+        0 12px 40px rgba(0,0,0,0.55);
+    }
+
+    .modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--red);
+      cursor: pointer;
+      line-height: 1;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      transition: background 0.15s;
+    }
+    .modal .close-btn:hover { background: rgba(139,26,26,0.12); }
+
+    .modal h3 {
+      font-size: 24px;
+      color: var(--red);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      text-align: center;
+    }
+
+    .modal .modal-sub {
+      text-align: center;
+      color: var(--brown-soft);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .play-images {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .play-images img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border: 3px solid var(--gold);
+      border-radius: 6px;
+      background: var(--paper-light);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .play-images .empty {
+      color: var(--brown-soft);
+      font-style: italic;
+      padding: 30px;
+    }
+
+    .play-answer {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .letter-box {
+      width: 36px;
+      height: 44px;
+      border: 2px solid var(--red);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--red);
+      background: var(--paper-light);
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .letter-box:focus {
+      background: #fff;
+      border-color: var(--gold-dark);
+      box-shadow: 0 0 0 2px var(--gold-bright);
+    }
+
+    .letter-box.correct {
+      background: var(--green);
+      color: var(--gold-bright);
+      border-color: var(--gold);
+    }
+
+    .play-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      font-family: inherit;
+      padding: 10px 22px;
+      border: 2px solid var(--red);
+      background: var(--red);
+      color: var(--paper);
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 2px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: var(--red-bright); border-color: var(--red-bright); }
+    .btn.secondary {
+      background: transparent;
+      color: var(--red);
+    }
+    .btn.secondary:hover { background: var(--red); color: var(--paper); }
+
+    .play-feedback {
+      text-align: center;
+      min-height: 22px;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .play-feedback.ok  { color: var(--green); font-weight: bold; }
+    .play-feedback.bad { color: var(--red); }
+
+    .play-attempts {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .play-attempts.has-items { display: flex; }
+    .play-attempts-label {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brown-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .colors-help {
+      position: relative;
+      display: inline-block;
+    }
+    .colors-help-link {
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: none;
+      color: var(--red);
+      background: none;
+      border: none;
+      border-bottom: 1px dashed var(--red);
+      padding: 0;
+      cursor: pointer;
+    }
+    .colors-help-link:hover { color: var(--red-bright); }
+    .colors-help-bubble {
+      display: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: calc(100% + 10px);
+      background: var(--paper-light);
+      border: 2px solid var(--red);
+      border-radius: 6px;
+      padding: 12px 14px;
+      width: 280px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      z-index: 10;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: none;
+      color: var(--brown);
+      line-height: 1.5;
+    }
+    .colors-help-bubble.show { display: block; }
+    .colors-help-bubble::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid var(--red);
+    }
+    .colors-help-bubble .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .colors-help-bubble .row:last-child { margin-bottom: 0; }
+    .colors-help-bubble .swatch {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 24px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 3px;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+    .colors-help-bubble .swatch.correct {
+      background: var(--green); color: #fff; border-color: var(--green);
+    }
+    .colors-help-bubble .swatch.present {
+      background: var(--gold-bright); color: var(--brown); border-color: var(--gold-dark);
+    }
+    .colors-help-bubble .swatch.absent {
+      background: var(--red); color: var(--paper); border-color: var(--red-deep);
+    }
+    .colors-help-bubble .note {
+      display: block;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--wheat);
+      font-style: italic;
+      color: var(--brown-soft);
+    }
+    .play-attempts-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 4px 6px;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: var(--red) transparent;
+    }
+    .play-attempts-list::-webkit-scrollbar { width: 6px; }
+    .play-attempts-list::-webkit-scrollbar-thumb {
+      background: var(--red);
+      border-radius: 3px;
+    }
+    .play-attempts .attempt {
+      display: inline-flex;
+      gap: 3px;
+      padding: 2px;
+      font-family: inherit;
+    }
+    .play-attempts .attempt .ch {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 26px;
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+    .play-attempts .attempt .ch.correct {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+    .play-attempts .attempt .ch.present {
+      background: var(--gold-bright);
+      color: var(--brown);
+      border-color: var(--gold-dark);
+    }
+    .play-attempts .attempt .ch.absent {
+      background: var(--red);
+      color: var(--paper);
+      border-color: var(--red-deep);
+    }
+
+    .solved-banner {
+      display: none;
+      text-align: center;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+      color: var(--red-deep);
+      padding: 14px;
+      border: 2px solid var(--red);
+      border-radius: 6px;
+      letter-spacing: 4px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin: 12px 0;
+      font-size: 16px;
+    }
+    .solved-banner.show { display: block; }
+
+    /* Loading / error */
+    .loading, .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--brown-soft);
+      font-size: 16px;
+    }
+    .error { color: var(--red); }
+
+    @media (max-width: 640px) {
+      .header-text h1 { font-size: 24px; letter-spacing: 3px; }
+      .total-progress { display: none; }
+      .rebus-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+      .tile { width: 84px; height: 94px; }
+      .hex-inner { font-size: 26px; }
+      .play-images img { width: 110px; height: 110px; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 14px; }
+      .stat-value { font-size: 22px; }
+      .stat-label { font-size: 10px; letter-spacing: 1.5px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="emblem"><span class="star">★</span></div>
+    <div class="header-text">
+      <h1>Советские Ребусы</h1>
+      <div class="subtitle">Доска&nbsp;почёта&nbsp;отгадчика</div>
+    </div>
+    <div class="total-progress" id="total-progress" title="Всего решено">
+      <span>Решено</span>
+      <strong><span id="total-solved">0</span>&nbsp;/&nbsp;<span id="total-count">0</span></strong>
+    </div>
+  </div>
+</header>
+
+<div class="legend-bar">
+  <div class="legend-item">
+    <div class="legend-swatch">
+      <div class="hex" style="background: var(--paper-dark); color: var(--red); border: 2px dashed var(--red);">1</div>
+    </div>
+    <span>Не&nbsp;начато</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch">
+      <div class="hex" style="background: var(--wheat); color: var(--red-deep);">2</div>
+    </div>
+    <span>В&nbsp;процессе</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch">
+      <div class="hex" style="background: var(--red); color: var(--gold-bright);">3★</div>
+    </div>
+    <span>Решено</span>
+  </div>
+</div>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-card" title="Всего успешных решений (включая повторные)">
+    <div class="stat-label">Решено&nbsp;ребусов</div>
+    <div class="stat-value" id="stat-total-solves">0</div>
+  </div>
+  <div class="stat-card" title="Сколько разных ребусов хотя бы раз решено">
+    <div class="stat-label">Решено&nbsp;уникальных</div>
+    <div class="stat-value" id="stat-unique-solved">0</div>
+  </div>
+  <div class="stat-card" title="Ребусы, решённые с первой попытки и запущенные единожды">
+    <div class="stat-label">С&nbsp;первой&nbsp;попытки</div>
+    <div class="stat-value" id="stat-first-try">0</div>
+  </div>
+  <div class="stat-card" title="Максимальная длина серии подряд решённых с первой попытки">
+    <div class="stat-label">Лучшая&nbsp;серия</div>
+    <div class="stat-value" id="stat-max-streak">0</div>
+  </div>
+</div>
+
+<div class="container" id="container">
+  <div class="loading">Загрузка ребусов…</div>
+</div>
+
+<!-- Play Modal -->
+<div class="modal-overlay" id="play-modal">
+  <div class="modal">
+    <button class="close-btn" onclick="closePlay()" aria-label="Закрыть">&times;</button>
+    <h3 id="play-title">Ребус</h3>
+    <div class="modal-sub" id="play-subtitle"></div>
+    <div class="play-images" id="play-images"></div>
+    <div class="solved-banner" id="solved-banner">★ Ответ&nbsp;верен!&nbsp;★</div>
+    <div class="play-feedback" id="play-feedback">&nbsp;</div>
+    <div class="play-attempts" id="play-attempts">
+      <div class="play-attempts-label">
+        <span>Попытки</span>
+        <span class="colors-help">
+          <button type="button" class="colors-help-link" onclick="toggleColorsHelp(event)">Что за цвета?</button>
+          <span class="colors-help-bubble" id="colors-help-bubble">
+            <span class="row"><span class="swatch correct">А</span><span>Буква на своём месте</span></span>
+            <span class="row"><span class="swatch present">А</span><span>Буква есть, но не на том месте</span></span>
+            <span class="row"><span class="swatch absent">А</span><span>Буквы нет в слове</span></span>
+            <span class="note">Учтите: некоторые буквы в слове могут повторяться.</span>
+          </span>
+        </span>
+      </div>
+      <div class="play-attempts-list" id="play-attempts-list"></div>
+    </div>
+    <form id="play-form" onsubmit="checkAnswer(event)">
+      <div class="play-answer" id="play-answer"></div>
+      <div class="play-actions">
+        <button type="submit" class="btn">Проверить</button>
+        <button type="button" class="btn secondary" onclick="closePlay()">Закрыть</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// === State ===
+const STORAGE_KEY = "rebus_progress";
+let appData = { levels: [] };
+let progress = loadProgress();
+let currentRebus = null;  // { rebus, level, index }
+
+// === Progress helpers ===
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch {}
+}
+
+function getState(rebusId) {
+  const s = progress[rebusId]?.state;
+  if (s === "solved" || s === "open") return s;
+  return "new";
+}
+
+function setState(rebusId, state) {
+  if (!progress[rebusId]) progress[rebusId] = {};
+  progress[rebusId].state = state;
+  saveProgress();
+}
+
+function getAttempts(rebusId) {
+  const a = progress[rebusId]?.attempts;
+  return Array.isArray(a) ? a : [];
+}
+
+function addAttempt(rebusId, word) {
+  if (!progress[rebusId]) progress[rebusId] = {};
+  const list = Array.isArray(progress[rebusId].attempts) ? progress[rebusId].attempts : [];
+  if (!list.includes(word)) list.push(word);
+  progress[rebusId].attempts = list;
+  saveProgress();
+}
+
+function clearAttempts(rebusId) {
+  if (progress[rebusId]) {
+    delete progress[rebusId].attempts;
+    saveProgress();
+  }
+}
+
+function bumpLaunches(rebusId) {
+  if (!progress[rebusId]) progress[rebusId] = {};
+  progress[rebusId].launches = (progress[rebusId].launches || 0) + 1;
+  saveProgress();
+}
+
+function recordSolve(rebusId, priorAttempts) {
+  if (!progress[rebusId]) progress[rebusId] = {};
+  const p = progress[rebusId];
+  p.solveCount = (p.solveCount || 0) + 1;
+  if (p.firstSolveAt == null) {
+    p.firstSolveAt = Date.now();
+    p.firstSolveAttempts = priorAttempts;
+  }
+  saveProgress();
+}
+
+// === Load data ===
+async function loadData() {
+  try {
+    const res = await fetch("/api/data");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    appData = await res.json();
+    render();
+  } catch (e) {
+    document.getElementById("container").innerHTML =
+      `<div class="error">Не&nbsp;удалось загрузить ребусы: ${escHtml(e.message)}</div>`;
+  }
+}
+
+// === Render ===
+function render() {
+  const container = document.getElementById("container");
+  const levels = appData.levels || [];
+
+  if (levels.length === 0) {
+    container.innerHTML = `<div class="loading">Ребусов пока нет.</div>`;
+    updateTotals();
+    return;
+  }
+
+  container.innerHTML = "";
+
+  levels.forEach(level => {
+    const rebuses = [...(level.rebuses || [])].sort((a, b) => a.order - b.order);
+    const solvedCount = rebuses.filter(r => getState(r.id) === "solved").length;
+    const total = rebuses.length;
+    const pct = total === 0 ? 0 : Math.round(100 * solvedCount / total);
+
+    const section = document.createElement("section");
+    section.className = "category";
+    section.innerHTML = `
+      <div class="category-ribbon">
+        <h2>${escHtml(level.name)}</h2>
+        <div class="category-progress">
+          <span class="count">${solvedCount}&nbsp;/&nbsp;${total}</span>
+          <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+      <div class="category-body">
+        ${rebuses.length === 0
+          ? `<div class="rebus-empty">В этой категории пока нет ребусов.</div>`
+          : `<div class="rebus-grid">${rebuses.map((r, i) => tileHtml(r, i, level)).join("")}</div>`
+        }
+      </div>
+    `;
+    container.appendChild(section);
+
+    section.querySelectorAll(".tile").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const rid = btn.dataset.rebusId;
+        const lid = parseInt(btn.dataset.levelId);
+        openPlay(rid, lid);
+      });
+    });
+  });
+
+  updateTotals();
+}
+
+function tileHtml(rebus, index, level) {
+  const state = getState(rebus.id);
+  const label =
+    state === "solved" ? "Решено" :
+    state === "open"   ? "В процессе" :
+                         "Не начато";
+  const num = index + 1;
+  return `
+    <button class="tile state-${state}"
+            data-rebus-id="${escAttr(rebus.id)}"
+            data-level-id="${level.id}"
+            title="Ребус №${num} — ${escAttr(label)}">
+      <div class="hex-outer">
+        <div class="hex-inner">${num}</div>
+      </div>
+      <span class="state-label">${label}</span>
+    </button>
+  `;
+}
+
+function updateTotals() {
+  const all = (appData.levels || []).flatMap(l => l.rebuses || []);
+  const solved = all.filter(r => getState(r.id) === "solved").length;
+  document.getElementById("total-solved").textContent = solved;
+  document.getElementById("total-count").textContent = all.length;
+  updateStats(all);
+}
+
+function computeStats(all) {
+  let totalSolves = 0;
+  let uniqueSolved = 0;
+  let firstTryCount = 0;
+  const events = [];
+
+  for (const r of all) {
+    const p = progress[r.id] || {};
+    const sc = p.solveCount || 0;
+    if (sc > 0) uniqueSolved++;
+    totalSolves += sc;
+    if (p.firstSolveAt != null) {
+      const firstTry = (p.launches === 1) && (p.firstSolveAttempts === 0);
+      if (firstTry) firstTryCount++;
+      events.push({ at: p.firstSolveAt, firstTry });
+    }
+  }
+
+  events.sort((a, b) => a.at - b.at);
+  let maxStreak = 0, cur = 0;
+  for (const e of events) {
+    if (e.firstTry) { cur++; if (cur > maxStreak) maxStreak = cur; }
+    else cur = 0;
+  }
+
+  return { totalSolves, uniqueSolved, firstTryCount, maxStreak };
+}
+
+function updateStats(all) {
+  const s = computeStats(all);
+  document.getElementById("stat-total-solves").textContent = s.totalSolves;
+  document.getElementById("stat-unique-solved").textContent = s.uniqueSolved;
+  document.getElementById("stat-first-try").textContent = s.firstTryCount;
+  document.getElementById("stat-max-streak").textContent = s.maxStreak;
+}
+
+// === Play modal ===
+function openPlay(rebusId, levelId) {
+  const level = appData.levels.find(l => l.id === levelId);
+  if (!level) return;
+  const sorted = [...level.rebuses].sort((a, b) => a.order - b.order);
+  const idx = sorted.findIndex(r => r.id === rebusId);
+  const rebus = sorted[idx];
+  if (!rebus) return;
+
+  currentRebus = { rebus, level, index: idx };
+
+  bumpLaunches(rebus.id);
+  setState(rebus.id, "open");
+
+  document.getElementById("play-title").textContent = `Ребус №${idx + 1}`;
+  document.getElementById("play-subtitle").textContent = level.name;
+
+  const imgEl = document.getElementById("play-images");
+  imgEl.innerHTML = rebus.images.length === 0
+    ? `<div class="empty">Изображения не загружены</div>`
+    : rebus.images.map(img => `<img src="/images/${encodeURIComponent(img)}" alt="" />`).join("");
+
+  renderAnswerInput(rebus);
+
+  document.getElementById("play-feedback").textContent = "\u00A0";
+  document.getElementById("play-feedback").className = "play-feedback";
+  const attemptsList = document.getElementById("play-attempts-list");
+  attemptsList.innerHTML = "";
+  const savedAttempts = getAttempts(rebus.id);
+  const normalize = s => s.replace(/Ё/g, "Е");
+  const target = (rebus.answer || "").toUpperCase();
+  savedAttempts.forEach(word => {
+    attemptsList.appendChild(buildAttemptNode(word, normalize(target)));
+  });
+  document.getElementById("play-attempts").classList.toggle("has-items", savedAttempts.length > 0);
+  document.getElementById("solved-banner").classList.remove("show");
+
+  document.getElementById("play-modal").classList.add("active");
+  // Focus first box
+  setTimeout(() => {
+    const first = document.querySelector(".letter-box:not([disabled])");
+    first?.focus();
+  }, 30);
+}
+
+function renderAnswerInput(rebus) {
+  const answerLen = (rebus.answer || "").length;
+  const answerEl = document.getElementById("play-answer");
+
+  if (answerLen === 0) {
+    answerEl.innerHTML = `<div class="rebus-empty" style="padding:8px;">У ребуса не задана отгадка.</div>`;
+    return;
+  }
+
+  answerEl.innerHTML = Array.from({ length: answerLen }).map((_, i) => `
+    <input type="text" class="letter-box"
+           maxlength="1"
+           value=""
+           data-idx="${i}" />
+  `).join("");
+
+  // Auto-advance focus
+  const boxes = answerEl.querySelectorAll(".letter-box");
+  boxes.forEach((box, i) => {
+    box.addEventListener("input", e => {
+      box.value = box.value.toUpperCase();
+      if (box.value && i + 1 < boxes.length) boxes[i + 1].focus();
+    });
+    box.addEventListener("keydown", e => {
+      if (e.key === "Backspace" && !box.value && i > 0) boxes[i - 1].focus();
+      if (e.key === "ArrowLeft" && i > 0) boxes[i - 1].focus();
+      if (e.key === "ArrowRight" && i + 1 < boxes.length) boxes[i + 1].focus();
+    });
+  });
+}
+
+function checkAnswer(ev) {
+  ev.preventDefault();
+  if (!currentRebus) return;
+  const { rebus } = currentRebus;
+  const target = (rebus.answer || "").toUpperCase().trim();
+  if (!target) return;
+
+  const boxes = document.querySelectorAll("#play-answer .letter-box");
+  const typed = Array.from(boxes).map(b => (b.value || "").toUpperCase()).join("");
+
+  const normalize = s => s.replace(/Ё/g, "Е");
+  const feedback = document.getElementById("play-feedback");
+
+  if (normalize(typed) === normalize(target)) {
+    const priorAttempts = getAttempts(rebus.id).length;
+    recordSolve(rebus.id, priorAttempts);
+    setState(rebus.id, "solved");
+    clearAttempts(rebus.id);
+    boxes.forEach(b => { b.classList.add("correct"); b.disabled = true; });
+    feedback.textContent = "Ответ верен!";
+    feedback.className = "play-feedback ok";
+    document.getElementById("solved-banner").classList.add("show");
+    render();
+  } else if (typed.length < target.length) {
+    feedback.textContent = "Заполните все клетки";
+    feedback.className = "play-feedback bad";
+  } else {
+    feedback.textContent = "Не\u00a0верно. Попробуйте\u00a0ещё.";
+    feedback.className = "play-feedback bad";
+
+    const attemptsList = document.getElementById("play-attempts-list");
+    const already = Array.from(attemptsList.children)
+      .some(el => el.dataset.word === typed);
+    if (!already) {
+      attemptsList.appendChild(buildAttemptNode(typed, normalize(target)));
+      attemptsList.scrollTop = attemptsList.scrollHeight;
+      addAttempt(rebus.id, typed);
+    }
+    document.getElementById("play-attempts").classList.add("has-items");
+
+    boxes.forEach(b => { b.value = ""; });
+    boxes[0]?.focus();
+  }
+}
+
+function buildAttemptNode(word, normalizedTarget) {
+  const normalize = s => s.replace(/Ё/g, "Е");
+  const item = document.createElement("span");
+  item.className = "attempt";
+  item.dataset.word = word;
+  const statuses = computeLetterStatuses(normalize(word), normalizedTarget);
+  item.innerHTML = word.split("")
+    .map((ch, i) => `<span class="ch ${statuses[i]}">${escHtml(ch)}</span>`)
+    .join("");
+  return item;
+}
+
+function closePlay() {
+  document.getElementById("play-modal").classList.remove("active");
+  currentRebus = null;
+  // Re-render to reflect progress (e.g., tile turned into "opened")
+  render();
+}
+
+document.getElementById("play-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closePlay();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closePlay();
+});
+
+function toggleColorsHelp(ev) {
+  ev.stopPropagation();
+  const bubble = document.getElementById("colors-help-bubble");
+  const wasShown = bubble.classList.contains("show");
+  bubble.classList.toggle("show");
+  if (!wasShown) {
+    const close = (e) => {
+      if (!bubble.contains(e.target) && !e.target.classList.contains("colors-help-link")) {
+        bubble.classList.remove("show");
+        document.removeEventListener("click", close);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", close), 0);
+  }
+}
+
+function computeLetterStatuses(guess, target) {
+  const g = guess.split("");
+  const t = target.split("");
+  const statuses = new Array(g.length).fill("absent");
+  const used = new Array(t.length).fill(false);
+  for (let i = 0; i < g.length; i++) {
+    if (i < t.length && g[i] === t[i]) {
+      statuses[i] = "correct";
+      used[i] = true;
+    }
+  }
+  for (let i = 0; i < g.length; i++) {
+    if (statuses[i] === "correct") continue;
+    for (let j = 0; j < t.length; j++) {
+      if (!used[j] && g[i] === t[j]) {
+        statuses[i] = "present";
+        used[j] = true;
+        break;
+      }
+    }
+  }
+  return statuses;
+}
+
+// === Utils ===
+function escHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s == null ? "" : String(s);
+  return d.innerHTML;
+}
+function escAttr(s) {
+  return escHtml(s).replace(/"/g, "&quot;");
+}
+
+// === Init ===
+loadData();
+</script>
+</body>
+</html>

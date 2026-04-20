@@ -1,0 +1,41 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "name": "Легкий",
+      "rebuses": [
+        {
+          "id": "2725b9c8",
+          "answer": "САМОЛЁТ",
+          "images": [
+            "21d64d0c3d054cc9806944f732f6c739.png",
+            "845aee588955421e87c6fbc4b0adbad8.png",
+            "ae2ebe0d64b94387ac6faaee813eb012.png"
+          ],
+          "order": 0
+        },
+        {
+          "id": "96ab11f9",
+          "answer": "",
+          "images": [
+            "058abfb898dd413cb32c7d3fe0fd187e.png",
+            "ef772a297e414685a2c1b71b76f7348a.png",
+            "a5b40799194d427e9525786114fab442.png",
+            "1c5949b06abb4b12902c6756a77dd3f2.png"
+          ],
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Средний",
+      "rebuses": []
+    },
+    {
+      "id": 3,
+      "name": "Сложный",
+      "rebuses": []
+    }
+  ]
+}

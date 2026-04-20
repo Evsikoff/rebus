@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка — Советские Ребусы</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      background: #f4e8c1;
+      color: #3a2a0a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #8b1a1a;
+      color: #f4e8c1;
+      padding: 18px 30px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+
+    header h1 {
+      font-size: 26px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    header .star {
+      font-size: 36px;
+      color: #ffd700;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      padding: 8px 18px;
+      border: 2px solid #8b1a1a;
+      background: #8b1a1a;
+      color: #f4e8c1;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #a52a2a;
+      border-color: #a52a2a;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: #8b1a1a;
+    }
+
+    button.secondary:hover {
+      background: #8b1a1a;
+      color: #f4e8c1;
+    }
+
+    button.danger {
+      background: #cc3333;
+      border-color: #cc3333;
+    }
+
+    button.danger:hover {
+      background: #ee4444;
+      border-color: #ee4444;
+    }
+
+    button.small {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .level {
+      background: #fff8e7;
+      border: 2px solid #c4a35a;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .level-header {
+      background: #c4a35a;
+      color: #3a2a0a;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: grab;
+    }
+
+    .level-header:active { cursor: grabbing; }
+
+    .level-header .grip {
+      font-size: 18px;
+      opacity: 0.5;
+      user-select: none;
+    }
+
+    .level-header h2 {
+      font-size: 18px;
+      flex: 1;
+    }
+
+    .level-header h2 input {
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: bold;
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed #3a2a0a;
+      color: #3a2a0a;
+      width: 200px;
+      outline: none;
+    }
+
+    .level-header .badge {
+      background: #8b1a1a;
+      color: #f4e8c1;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .level-body {
+      padding: 16px;
+    }
+
+    .rebus-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .rebus-card {
+      background: #fffdf5;
+      border: 1px solid #d4c48a;
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      cursor: grab;
+      transition: box-shadow 0.2s;
+    }
+
+    .rebus-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .rebus-card:active { cursor: grabbing; }
+
+    .rebus-card .order-num {
+      font-size: 22px;
+      font-weight: bold;
+      color: #8b1a1a;
+      min-width: 30px;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    .rebus-card .rebus-content {
+      flex: 1;
+    }
+
+    .rebus-answer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .rebus-answer label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .rebus-answer input {
+      font-family: inherit;
+      font-size: 16px;
+      padding: 4px 10px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      background: #fff;
+      color: #3a2a0a;
+      width: 220px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      outline: none;
+    }
+
+    .rebus-answer input:focus {
+      border-color: #8b1a1a;
+    }
+
+    .rebus-images {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      cursor: default;
+    }
+
+    .rebus-img-wrapper {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 1px solid #d4c48a;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #eee;
+      cursor: grab;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .rebus-img-wrapper:active { cursor: grabbing; }
+
+    .rebus-img-wrapper.img-dragging {
+      opacity: 0.35;
+      transform: scale(0.95);
+    }
+
+    .rebus-img-wrapper.img-drag-over {
+      box-shadow: -3px 0 0 0 #8b1a1a;
+    }
+
+    .rebus-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .rebus-img-wrapper .delete-img {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(200,0,0,0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .rebus-img-wrapper:hover .delete-img {
+      opacity: 1;
+    }
+
+    .upload-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .upload-controls input[type="file"] {
+      display: none;
+    }
+
+    .upload-controls .url-input {
+      font-family: inherit;
+      padding: 5px 10px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      font-size: 13px;
+      width: 300px;
+    }
+
+    .rebus-actions {
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .move-select {
+      font-family: inherit;
+      padding: 4px 8px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #fff;
+    }
+
+    .empty-msg {
+      color: #999;
+      font-style: italic;
+      padding: 10px;
+    }
+
+    /* Preview modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #f4e8c1;
+      border: 4px solid #8b1a1a;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+      text-align: center;
+    }
+
+    .modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #8b1a1a;
+      cursor: pointer;
+    }
+
+    .modal h3 {
+      font-size: 22px;
+      color: #8b1a1a;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .preview-images {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .preview-images img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border: 3px solid #c4a35a;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .preview-answer {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .preview-answer .letter-box {
+      width: 36px;
+      height: 40px;
+      border: 2px solid #8b1a1a;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #8b1a1a;
+      background: #fff;
+      text-transform: uppercase;
+    }
+
+    .preview-hint {
+      margin-top: 12px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .dragging {
+      opacity: 0.4;
+    }
+
+    .drag-over {
+      border-top: 3px solid #8b1a1a;
+    }
+
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #3a2a0a;
+      color: #f4e8c1;
+      padding: 6px 20px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 100;
+    }
+
+    .status-bar .saved {
+      color: #90ee90;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f4e8c1;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="star">&#9733;</span>
+  <h1>Админка Ребусов</h1>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <button onclick="addLevel()">+ Добавить уровень</button>
+  </div>
+  <div id="levels-container"></div>
+</div>
+
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal">
+    <button class="close-btn" onclick="closePreview()">&times;</button>
+    <h3>Предпросмотр ребуса</h3>
+    <div class="preview-images" id="preview-images"></div>
+    <div class="preview-answer" id="preview-answer"></div>
+    <div class="preview-hint" id="preview-hint"></div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span id="status-text">Загрузка...</span>
+  <span id="status-count"></span>
+</div>
+
+<script>
+let appData = { levels: [] };
+let saveTimeout = null;
+
+async function api(url, method = "GET", body = null) {
+  const opts = { method, headers: {} };
+  if (body && !(body instanceof FormData)) {
+    opts.headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(body);
+  } else if (body instanceof FormData) {
+    opts.body = body;
+  }
+  const res = await fetch(url, opts);
+  return res.json();
+}
+
+async function loadData() {
+  appData = await api("/api/data");
+  render();
+  setStatus("Данные загружены", true);
+  updateCount();
+}
+
+function setStatus(msg, saved = false) {
+  const el = document.getElementById("status-text");
+  el.innerHTML = saved ? `<span class="saved">${msg}</span>` : msg;
+}
+
+function updateCount() {
+  const total = appData.levels.reduce((s, l) => s + l.rebuses.length, 0);
+  document.getElementById("status-count").textContent =
+    `Уровней: ${appData.levels.length} | Ребусов: ${total}`;
+}
+
+function render() {
+  const container = document.getElementById("levels-container");
+  container.innerHTML = "";
+
+  appData.levels.forEach((level, li) => {
+    const levelEl = document.createElement("div");
+    levelEl.className = "level";
+    levelEl.dataset.levelId = level.id;
+    levelEl.draggable = true;
+
+    levelEl.addEventListener("dragstart", e => {
+      if (e.target !== levelEl) return;
+      e.dataTransfer.setData("type", "level");
+      e.dataTransfer.setData("levelId", level.id);
+      levelEl.classList.add("dragging");
+    });
+    levelEl.addEventListener("dragend", () => levelEl.classList.remove("dragging"));
+    levelEl.addEventListener("dragover", e => {
+      e.preventDefault();
+      const dragType = e.dataTransfer.types.includes("type") ? "level" : "";
+      if (dragType) levelEl.classList.add("drag-over");
+    });
+    levelEl.addEventListener("dragleave", () => levelEl.classList.remove("drag-over"));
+    levelEl.addEventListener("drop", async e => {
+      e.preventDefault();
+      levelEl.classList.remove("drag-over");
+      const type = e.dataTransfer.getData("type");
+      if (type === "level") {
+        const fromId = parseInt(e.dataTransfer.getData("levelId"));
+        const toId = level.id;
+        if (fromId === toId) return;
+        const order = appData.levels.map(l => l.id);
+        const fromIdx = order.indexOf(fromId);
+        const toIdx = order.indexOf(toId);
+        order.splice(fromIdx, 1);
+        order.splice(toIdx, 0, fromId);
+        appData = await api("/api/levels/reorder", "PUT", { order });
+        render();
+        setStatus("Порядок уровней обновлён", true);
+      }
+    });
+
+    const sortedRebuses = [...level.rebuses].sort((a, b) => a.order - b.order);
+
+    levelEl.innerHTML = `
+      <div class="level-header">
+        <span class="grip">&#9776;</span>
+        <h2><input value="${escHtml(level.name)}"
+              onchange="renameLevel(${level.id}, this.value)"
+              onclick="event.stopPropagation()" /></h2>
+        <span class="badge">${level.rebuses.length} ребус(ов)</span>
+        <button class="small secondary" onclick="addRebus(${level.id})">+ Ребус</button>
+        <button class="small danger" onclick="deleteLevel(${level.id})">&#10005;</button>
+      </div>
+      <div class="level-body">
+        <div class="rebus-list" data-level-id="${level.id}">
+          ${sortedRebuses.length === 0 ? '<div class="empty-msg">Нет ребусов. Нажмите "+ Ребус" чтобы добавить.</div>' : ""}
+          ${sortedRebuses.map((r, i) => renderRebus(r, i, level)).join("")}
+        </div>
+      </div>
+    `;
+    container.appendChild(levelEl);
+
+    // Setup drag-and-drop for rebuses within this level
+    const rebusList = levelEl.querySelector(".rebus-list");
+    rebusList.querySelectorAll(".rebus-card").forEach(card => {
+      card.addEventListener("dragstart", e => {
+        e.stopPropagation();
+        e.dataTransfer.setData("type", "rebus");
+        e.dataTransfer.setData("rebusId", card.dataset.rebusId);
+        e.dataTransfer.setData("fromLevel", level.id);
+        card.classList.add("dragging");
+      });
+      card.addEventListener("dragend", () => card.classList.remove("dragging"));
+      card.addEventListener("dragover", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.add("drag-over");
+      });
+      card.addEventListener("dragleave", () => card.classList.remove("drag-over"));
+      card.addEventListener("drop", async e => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.remove("drag-over");
+        const type = e.dataTransfer.getData("type");
+        if (type !== "rebus") return;
+        const fromRebusId = e.dataTransfer.getData("rebusId");
+        const toRebusId = card.dataset.rebusId;
+        if (fromRebusId === toRebusId) return;
+        const fromLevelId = parseInt(e.dataTransfer.getData("fromLevel"));
+        if (fromLevelId !== level.id) {
+          // Move between levels
+          appData = await api(`/api/levels/${fromLevelId}/rebuses/${fromRebusId}/move/${level.id}`, "POST");
+        }
+        // Reorder within level
+        const currentOrder = appData.levels
+          .find(l => l.id === level.id).rebuses
+          .sort((a, b) => a.order - b.order)
+          .map(r => r.id);
+        const fi = currentOrder.indexOf(fromRebusId);
+        const ti = currentOrder.indexOf(toRebusId);
+        if (fi !== -1 && ti !== -1) {
+          currentOrder.splice(fi, 1);
+          currentOrder.splice(ti, 0, fromRebusId);
+          appData = await api(`/api/levels/${level.id}/reorder`, "PUT", { order: currentOrder });
+        }
+        render();
+        setStatus("Порядок ребусов обновлён", true);
+        updateCount();
+      });
+    });
+    // Setup drag-and-drop for images within rebuses
+    levelEl.querySelectorAll(".rebus-images").forEach(container => {
+      const wrappers = container.querySelectorAll(".rebus-img-wrapper");
+      wrappers.forEach(wrapper => {
+        wrapper.addEventListener("dragstart", e => {
+          e.stopPropagation();
+          e.dataTransfer.setData("type", "image");
+          e.dataTransfer.setData("imgName", wrapper.dataset.img);
+          e.dataTransfer.setData("imgLevelId", wrapper.dataset.levelId);
+          e.dataTransfer.setData("imgRebusId", wrapper.dataset.rebusId);
+          e.dataTransfer.effectAllowed = "move";
+          wrapper.classList.add("img-dragging");
+        });
+        wrapper.addEventListener("dragend", () => {
+          wrapper.classList.remove("img-dragging");
+        });
+        wrapper.addEventListener("dragover", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          wrapper.classList.add("img-drag-over");
+        });
+        wrapper.addEventListener("dragleave", () => {
+          wrapper.classList.remove("img-drag-over");
+        });
+        wrapper.addEventListener("drop", async e => {
+          e.preventDefault();
+          e.stopPropagation();
+          wrapper.classList.remove("img-drag-over");
+          const type = e.dataTransfer.getData("type");
+          if (type !== "image") return;
+          const fromImg = e.dataTransfer.getData("imgName");
+          const toImg = wrapper.dataset.img;
+          const rebusId = e.dataTransfer.getData("imgRebusId");
+          const lvlId = parseInt(e.dataTransfer.getData("imgLevelId"));
+          if (fromImg === toImg) return;
+          if (rebusId !== wrapper.dataset.rebusId) return;
+          // Build new order
+          const lvl = appData.levels.find(l => l.id === lvlId);
+          const rebus = lvl.rebuses.find(r => r.id === rebusId);
+          const order = [...rebus.images];
+          const fromIdx = order.indexOf(fromImg);
+          const toIdx = order.indexOf(toImg);
+          order.splice(fromIdx, 1);
+          order.splice(toIdx, 0, fromImg);
+          await reorderImages(lvlId, rebusId, order);
+        });
+      });
+    });
+  });
+  updateCount();
+}
+
+function renderRebus(rebus, index, level) {
+  const imagesHtml = rebus.images.map(img => `
+    <div class="rebus-img-wrapper" draggable="true" data-img="${img}"
+         data-level-id="${level.id}" data-rebus-id="${rebus.id}">
+      <img src="/images/${img}" alt="rebus image" draggable="false" />
+      <button class="delete-img" onclick="event.stopPropagation(); deleteImage(${level.id}, '${rebus.id}', '${img}')">&times;</button>
+    </div>
+  `).join("");
+
+  const moveOptions = appData.levels
+    .filter(l => l.id !== level.id)
+    .map(l => `<option value="${l.id}">${escHtml(l.name)}</option>`)
+    .join("");
+
+  return `
+    <div class="rebus-card" draggable="true" data-rebus-id="${rebus.id}">
+      <div class="order-num">${index + 1}</div>
+      <div class="rebus-content">
+        <div class="rebus-answer">
+          <label>Отгадка:</label>
+          <input value="${escHtml(rebus.answer)}"
+                 placeholder="Введите слово..."
+                 oninput="updateAnswer(${level.id}, '${rebus.id}', this.value)" />
+        </div>
+        <div class="rebus-images">${imagesHtml}</div>
+        <div class="upload-controls">
+          <button class="small secondary" onclick="this.nextElementSibling.click()">
+            Загрузить файлы
+          </button>
+          <input type="file" accept="image/*" multiple
+                 onchange="uploadFiles(${level.id}, '${rebus.id}', this)" />
+          <input type="text" class="url-input" placeholder="URL изображения..."
+                 id="url-${rebus.id}" />
+          <button class="small secondary"
+                  onclick="uploadUrl(${level.id}, '${rebus.id}')">
+            Загрузить по URL
+          </button>
+        </div>
+      </div>
+      <div class="rebus-actions">
+        <button class="small secondary" onclick="openPreview('${rebus.id}', ${level.id})">
+          Просмотр
+        </button>
+        ${moveOptions ? `
+          <select class="move-select" onchange="moveRebus(${level.id}, '${rebus.id}', this.value); this.value=''">
+            <option value="">Переместить...</option>
+            ${moveOptions}
+          </select>
+        ` : ""}
+        <button class="small danger" onclick="deleteRebus(${level.id}, '${rebus.id}')">
+          Удалить
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function escHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
+}
+
+// === Actions ===
+
+async function addLevel() {
+  const name = prompt("Название уровня:", "Новый уровень");
+  if (!name) return;
+  setStatus("Добавление уровня...");
+  appData = await api("/api/levels", "POST", { name });
+  render();
+  setStatus("Уровень добавлен", true);
+}
+
+async function deleteLevel(levelId) {
+  if (!confirm("Удалить уровень и все его ребусы?")) return;
+  setStatus("Удаление уровня...");
+  appData = await api(`/api/levels/${levelId}`, "DELETE");
+  render();
+  setStatus("Уровень удалён", true);
+}
+
+async function renameLevel(levelId, name) {
+  appData = await api(`/api/levels/${levelId}/name`, "PUT", { name });
+  setStatus("Уровень переименован", true);
+  updateCount();
+}
+
+async function addRebus(levelId) {
+  setStatus("Добавление ребуса...");
+  appData = await api(`/api/levels/${levelId}/rebuses`, "POST", { answer: "" });
+  render();
+  setStatus("Ребус добавлен", true);
+}
+
+async function deleteRebus(levelId, rebusId) {
+  if (!confirm("Удалить ребус?")) return;
+  setStatus("Удаление ребуса...");
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}`, "DELETE");
+  render();
+  setStatus("Ребус удалён", true);
+}
+
+let answerTimer = null;
+function updateAnswer(levelId, rebusId, value) {
+  clearTimeout(answerTimer);
+  answerTimer = setTimeout(async () => {
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}`, "PUT", { answer: value });
+    setStatus("Отгадка сохранена", true);
+    updateCount();
+  }, 500);
+}
+
+async function uploadFiles(levelId, rebusId, input) {
+  if (!input.files.length) return;
+  const count = input.files.length;
+  setStatus(`<span class="loading-spinner"></span>Загрузка ${count} изображ...`);
+  const fd = new FormData();
+  for (const file of input.files) {
+    fd.append("image", file);
+  }
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/upload`, "POST", fd);
+  render();
+  setStatus(`Загружено ${count} изображение(й)`, true);
+}
+
+async function reorderImages(levelId, rebusId, newOrder) {
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/reorder-images`, "PUT", { order: newOrder });
+  render();
+  setStatus("Порядок изображений обновлён", true);
+}
+
+async function uploadUrl(levelId, rebusId) {
+  const urlInput = document.getElementById(`url-${rebusId}`);
+  const url = urlInput.value.trim();
+  if (!url) return alert("Введите URL изображения");
+  setStatus('<span class="loading-spinner"></span>Загрузка по URL...');
+  try {
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/upload-url`, "POST", { url });
+    render();
+    setStatus("Изображение загружено по URL", true);
+  } catch (e) {
+    setStatus("Ошибка загрузки по URL");
+    alert("Не удалось загрузить изображение по URL");
+  }
+}
+
+async function deleteImage(levelId, rebusId, imageName) {
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/images/${imageName}`, "DELETE");
+  render();
+  setStatus("Изображение удалено", true);
+}
+
+async function moveRebus(fromLevel, rebusId, toLevel) {
+  if (!toLevel) return;
+  appData = await api(`/api/levels/${fromLevel}/rebuses/${rebusId}/move/${toLevel}`, "POST");
+  render();
+  setStatus("Ребус перемещён", true);
+}
+
+// === Preview ===
+
+function openPreview(rebusId, levelId) {
+  const level = appData.levels.find(l => l.id === levelId);
+  const rebus = level.rebuses.find(r => r.id === rebusId);
+  if (!rebus) return;
+
+  const imagesEl = document.getElementById("preview-images");
+  const answerEl = document.getElementById("preview-answer");
+  const hintEl = document.getElementById("preview-hint");
+
+  if (rebus.images.length === 0) {
+    imagesEl.innerHTML = '<div class="empty-msg">Нет изображений</div>';
+  } else {
+    imagesEl.innerHTML = rebus.images.map(img =>
+      `<img src="/images/${img}" alt="rebus" />`
+    ).join("");
+  }
+
+  const answer = rebus.answer || "";
+  if (answer) {
+    answerEl.innerHTML = answer.split("").map(() =>
+      `<div class="letter-box">?</div>`
+    ).join("");
+    hintEl.textContent = `${answer.length} букв(а)`;
+  } else {
+    answerEl.innerHTML = '<div class="empty-msg">Отгадка не задана</div>';
+    hintEl.textContent = "";
+  }
+
+  document.getElementById("preview-modal").classList.add("active");
+}
+
+function closePreview() {
+  document.getElementById("preview-modal").classList.remove("active");
+}
+
+document.getElementById("preview-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closePreview();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closePreview();
+});
+
+// === Init ===
+loadData();
+</script>
+</body>
+</html>

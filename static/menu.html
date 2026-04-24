@@ -485,7 +485,13 @@
       box-shadow:
         0 0 0 2px var(--gold) inset,
         0 12px 40px rgba(0,0,0,0.55);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--red) transparent;
     }
+    .modal::-webkit-scrollbar { width: 6px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
 
     .modal .close-btn {
       position: absolute;
@@ -850,6 +856,79 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* === IFRAME MODAL === */
+    .iframe-modal-box {
+      max-width: 92vw;
+      width: 92vw;
+      height: 88vh;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 16px 16px;
+    }
+
+    .iframe-modal-box h3 {
+      margin-bottom: 2px;
+    }
+
+    .iframe-container {
+      flex: 1;
+      position: relative;
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+      margin-top: 10px;
+    }
+
+    .iframe-container iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .iframe-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--paper);
+      color: var(--brown-soft);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 1;
+      transition: opacity 0.3s;
+    }
+
+    .iframe-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Tile badge for iframe rebuses */
+    .tile-iframe .hex-inner::after {
+      content: "⧉";
+      position: absolute;
+      bottom: 10px;
+      font-size: 14px;
+      font-weight: normal;
+      opacity: 0.75;
+      letter-spacing: 0;
+    }
+
+    /* Override solved state ::after for iframe tiles (the gold line) */
+    .tile-iframe.state-solved .hex-inner::after {
+      content: "⧉";
+      background: none;
+      width: auto;
+      height: auto;
+      color: var(--gold-bright);
+    }
+
     /* Loading / error */
     .loading, .error {
       text-align: center;
@@ -965,6 +1044,19 @@
         <button type="button" class="btn secondary" onclick="closePlay()">Закрыть</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- iframe Rebus Modal -->
+<div class="modal-overlay" id="iframe-modal">
+  <div class="modal iframe-modal-box">
+    <button class="close-btn" onclick="closeIframePlay()" aria-label="Закрыть">&times;</button>
+    <h3 id="iframe-play-title">Ребус</h3>
+    <div class="modal-sub" id="iframe-play-subtitle"></div>
+    <div class="iframe-container">
+      <div class="iframe-loading" id="iframe-loading">Загрузка…</div>
+      <iframe id="rebus-iframe" src="" allow="fullscreen"></iframe>
+    </div>
   </div>
 </div>
 
@@ -1105,16 +1197,18 @@ function render() {
 
 function tileHtml(rebus, index, level) {
   const state = getState(rebus.id);
+  const isIframe = !!(rebus.iframeUrl);
   const label =
     state === "solved" ? "Решено" :
     state === "open"   ? "В процессе" :
                          "Не начато";
   const num = index + 1;
+  const typeHint = isIframe ? " (интерактивный)" : "";
   return `
-    <button class="tile state-${state}"
+    <button class="tile state-${state}${isIframe ? " tile-iframe" : ""}"
             data-rebus-id="${escAttr(rebus.id)}"
             data-level-id="${level.id}"
-            title="Ребус №${num} — ${escAttr(label)}">
+            title="Ребус №${num}${escAttr(typeHint)} — ${escAttr(label)}">
       <div class="hex-outer">
         <div class="hex-inner">${num}</div>
       </div>
@@ -1175,6 +1269,11 @@ function openPlay(rebusId, levelId) {
   const idx = sorted.findIndex(r => r.id === rebusId);
   const rebus = sorted[idx];
   if (!rebus) return;
+
+  if (rebus.iframeUrl) {
+    openIframePlay(rebus, idx, level);
+    return;
+  }
 
   currentRebus = { rebus, level, index: idx };
 
@@ -1349,7 +1448,117 @@ document.getElementById("play-modal").addEventListener("click", e => {
   if (e.target === e.currentTarget) closePlay();
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closePlay();
+  if (e.key === "Escape") {
+    if (document.getElementById("iframe-modal").classList.contains("active")) {
+      closeIframePlay();
+    } else {
+      closePlay();
+    }
+  }
+});
+
+// === iframe Rebus ===
+let currentIframeRebus = null;
+let iframeOrigin = null;
+
+function openIframePlay(rebus, idx, level) {
+  currentIframeRebus = { rebus, level, index: idx };
+
+  try {
+    iframeOrigin = new URL(rebus.iframeUrl).origin;
+  } catch {
+    iframeOrigin = null;
+  }
+
+  bumpLaunches(rebus.id);
+  if (getState(rebus.id) !== "solved") {
+    setState(rebus.id, "open");
+  }
+
+  document.getElementById("iframe-play-title").textContent = `Ребус №${idx + 1}`;
+  document.getElementById("iframe-play-subtitle").textContent = level.name;
+
+  const iframe = document.getElementById("rebus-iframe");
+  const loading = document.getElementById("iframe-loading");
+  loading.classList.remove("hidden");
+  iframe.src = "";
+
+  document.getElementById("iframe-modal").classList.add("active");
+
+  iframe.onload = () => {
+    loading.classList.add("hidden");
+    const savedProgress = getIframeProgress(rebus.id);
+    const alreadySolved = (progress[rebus.id]?.solveCount || 0) > 0;
+    try {
+      iframe.contentWindow.postMessage({
+        type: "rebus:init",
+        rebusId: rebus.id,
+        solved: alreadySolved,
+        progress: savedProgress
+      }, iframeOrigin || "*");
+    } catch {}
+  };
+
+  // Set src after attaching handler to avoid race on fast loads
+  setTimeout(() => { iframe.src = rebus.iframeUrl; }, 0);
+}
+
+function closeIframePlay() {
+  document.getElementById("iframe-modal").classList.remove("active");
+  const iframe = document.getElementById("rebus-iframe");
+  iframe.onload = null;
+  iframe.src = "";
+  currentIframeRebus = null;
+  iframeOrigin = null;
+  render();
+}
+
+document.getElementById("iframe-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeIframePlay();
+});
+
+function getIframeProgress(rebusId) {
+  try {
+    const raw = localStorage.getItem(`rebus_iframe_progress_${rebusId}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveIframeProgress(rebusId, data) {
+  try {
+    localStorage.setItem(`rebus_iframe_progress_${rebusId}`, JSON.stringify(data));
+  } catch {}
+}
+
+window.addEventListener("message", event => {
+  if (!currentIframeRebus) return;
+  if (iframeOrigin && event.origin !== iframeOrigin) return;
+
+  const msg = event.data;
+  if (!msg || typeof msg.type !== "string") return;
+
+  const rebusId = currentIframeRebus.rebus.id;
+
+  switch (msg.type) {
+    case "rebus:started":
+      if (getState(rebusId) !== "solved") setState(rebusId, "open");
+      render();
+      break;
+
+    case "rebus:solved":
+      recordSolve(rebusId, 0);
+      setState(rebusId, "solved");
+      render();
+      break;
+
+    case "rebus:progress":
+      if (msg.data != null) saveIframeProgress(rebusId, msg.data);
+      break;
+
+    case "rebus:close":
+      closeIframePlay();
+      break;
+  }
 });
 
 function toggleColorsHelp(ev) {

@@ -26,6 +26,8 @@ def load_data():
                 rebus["texts"] = []
             if "explanation" not in rebus or not isinstance(rebus["explanation"], str):
                 rebus["explanation"] = ""
+            if "iframeUrl" not in rebus or not isinstance(rebus["iframeUrl"], str):
+                rebus["iframeUrl"] = ""
     return data
 
 
@@ -137,6 +139,8 @@ def update_rebus(level_id, rebus_id):
                         rebus["order"] = body["order"]
                     if "explanation" in body:
                         rebus["explanation"] = body["explanation"] or ""
+                    if "iframeUrl" in body:
+                        rebus["iframeUrl"] = body["iframeUrl"] or ""
                     save_data(data)
                     return jsonify(data)
     return jsonify({"error": "Not found"}), 404

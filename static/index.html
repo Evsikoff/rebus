@@ -243,6 +243,56 @@
       border-color: #8b1a1a;
     }
 
+    .rebus-iframe-url {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      background: #fff8e7;
+      border: 1px dashed #c4a35a;
+      border-radius: 6px;
+    }
+
+    .rebus-iframe-url label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #6b4e1a;
+    }
+
+    .rebus-iframe-url input {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 5px 10px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      background: #fff;
+      color: #3a2a0a;
+      outline: none;
+    }
+
+    .rebus-iframe-url input:focus {
+      border-color: #8b1a1a;
+    }
+
+    .rebus-iframe-url small {
+      font-size: 11px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .rebus-iframe-url .iframe-active {
+      display: inline-block;
+      margin-top: 2px;
+      padding: 2px 8px;
+      background: #3f6b2a;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
     .rebus-images {
       display: flex;
       gap: 10px;
@@ -848,6 +898,15 @@ function renderRebus(rebus, index, level) {
                     placeholder="Например: Се + Вас + Топ + Поль = Севастополь"
                     oninput="updateExplanation(${level.id}, '${rebus.id}', this.value)">${escHtml(rebus.explanation || "")}</textarea>
         </div>
+        <div class="rebus-iframe-url">
+          <label>⧉ iframe-ребус — URL внешнего приложения:</label>
+          <input type="url"
+                 value="${escHtml(rebus.iframeUrl || '')}"
+                 placeholder="https://example.com/my-rebus  (оставьте пустым для обычного ребуса)"
+                 oninput="updateIframeUrl(${level.id}, '${rebus.id}', this.value)" />
+          ${rebus.iframeUrl ? `<span class="iframe-active">✓ Активен: открывается как встроенное приложение</span>` : ''}
+          <small>Если задан URL — ребус открывается в iframe. Поля «Отгадка» и «Пояснение» используются только для ребусов без iframe.</small>
+        </div>
         <div class="rebus-images">${imagesHtml}</div>
         <div class="rebus-texts">${textsHtml}</div>
         <div class="add-text-row">
@@ -946,6 +1005,16 @@ function updateAnswer(levelId, rebusId, value) {
   }, 500);
 }
 
+const iframeUrlTimers = {};
+function updateIframeUrl(levelId, rebusId, value) {
+  clearTimeout(iframeUrlTimers[rebusId]);
+  iframeUrlTimers[rebusId] = setTimeout(async () => {
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}`, "PUT", { iframeUrl: value });
+    render();
+    setStatus("iframe URL сохранён", true);
+  }, 600);
+}
+
 const explanationTimers = {};
 function updateExplanation(levelId, rebusId, value) {
   clearTimeout(explanationTimers[rebusId]);
@@ -1041,7 +1110,12 @@ function openPreview(rebusId, levelId) {
   const answerEl = document.getElementById("preview-answer");
   const hintEl = document.getElementById("preview-hint");
 
-  if (rebus.images.length === 0) {
+  if (rebus.iframeUrl) {
+    imagesEl.innerHTML = `<div class="empty-msg" style="color:#3f6b2a;font-style:normal;">
+      ⧉ Этот ребус откроется как встроенное приложение (iframe):<br>
+      <small style="word-break:break-all;">${escHtml(rebus.iframeUrl)}</small>
+    </div>`;
+  } else if (rebus.images.length === 0) {
     imagesEl.innerHTML = '<div class="empty-msg">Нет изображений</div>';
   } else {
     imagesEl.innerHTML = rebus.images.map(img =>

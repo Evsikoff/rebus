@@ -12,7 +12,14 @@ DATA_FILE = os.path.join(DATA_DIR, "rebuses.json")
 
 def load_data():
     with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    for level in data.get("levels", []):
+        for rebus in level.get("rebuses", []):
+            if "texts" not in rebus or not isinstance(rebus["texts"], list):
+                rebus["texts"] = []
+            if "explanation" not in rebus or not isinstance(rebus["explanation"], str):
+                rebus["explanation"] = ""
+    return data
 
 
 @app.route("/")

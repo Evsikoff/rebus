@@ -213,6 +213,36 @@
       border-color: #8b1a1a;
     }
 
+    .rebus-explanation {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .rebus-explanation label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #6b4e1a;
+    }
+
+    .rebus-explanation textarea {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 6px 10px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      background: #fffdf5;
+      color: #3a2a0a;
+      resize: vertical;
+      min-height: 50px;
+      outline: none;
+    }
+
+    .rebus-explanation textarea:focus {
+      border-color: #8b1a1a;
+    }
+
     .rebus-images {
       display: flex;
       gap: 10px;
@@ -272,6 +302,66 @@
 
     .rebus-img-wrapper:hover .delete-img {
       opacity: 1;
+    }
+
+    .rebus-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .rebus-text-item {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+      background: #fffdf5;
+      border: 1px solid #d4c48a;
+      border-radius: 4px;
+      padding: 6px 8px;
+    }
+
+    .rebus-text-item textarea {
+      flex: 1;
+      font-family: inherit;
+      font-size: 14px;
+      border: none;
+      background: transparent;
+      resize: vertical;
+      min-height: 32px;
+      outline: none;
+      color: #3a2a0a;
+    }
+
+    .rebus-text-item .delete-text {
+      background: rgba(200,0,0,0.8);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 26px;
+      cursor: pointer;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .rebus-text-item .delete-text:hover { background: rgba(200,0,0,1); }
+
+    .add-text-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .add-text-row textarea {
+      flex: 1;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 5px 8px;
+      border: 1px solid #c4a35a;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 30px;
+      outline: none;
     }
 
     .upload-controls {
@@ -378,6 +468,25 @@
       background: #fff;
     }
 
+    .preview-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .preview-texts .preview-text {
+      background: #fffdf5;
+      border: 2px solid #c4a35a;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 15px;
+      color: #3a2a0a;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .preview-answer {
       display: flex;
       justify-content: center;
@@ -404,6 +513,29 @@
       margin-top: 12px;
       color: #666;
       font-size: 14px;
+    }
+
+    .preview-explanation {
+      margin-top: 14px;
+      background: #fffdf5;
+      border: 2px dashed #c4a35a;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #3a2a0a;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .preview-explanation .preview-explanation-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8b1a1a;
+      margin-bottom: 6px;
+      font-weight: bold;
     }
 
     .dragging {
@@ -466,8 +598,10 @@
     <button class="close-btn" onclick="closePreview()">&times;</button>
     <h3>Предпросмотр ребуса</h3>
     <div class="preview-images" id="preview-images"></div>
+    <div class="preview-texts" id="preview-texts"></div>
     <div class="preview-answer" id="preview-answer"></div>
     <div class="preview-hint" id="preview-hint"></div>
+    <div class="preview-explanation" id="preview-explanation" style="display:none;"></div>
   </div>
 </div>
 
@@ -682,6 +816,17 @@ function renderRebus(rebus, index, level) {
     </div>
   `).join("");
 
+  const texts = rebus.texts || [];
+  const textsHtml = texts.map((t, i) => `
+    <div class="rebus-text-item">
+      <textarea rows="1"
+                oninput="updateText(${level.id}, '${rebus.id}', ${i}, this.value)"
+                placeholder="Текст задания...">${escHtml(t)}</textarea>
+      <button class="delete-text" title="Удалить текст"
+              onclick="deleteText(${level.id}, '${rebus.id}', ${i})">&times;</button>
+    </div>
+  `).join("");
+
   const moveOptions = appData.levels
     .filter(l => l.id !== level.id)
     .map(l => `<option value="${l.id}">${escHtml(l.name)}</option>`)
@@ -697,8 +842,23 @@ function renderRebus(rebus, index, level) {
                  placeholder="Введите слово..."
                  oninput="updateAnswer(${level.id}, '${rebus.id}', this.value)" />
         </div>
+        <div class="rebus-explanation">
+          <label>Пояснение к разгадке (показывается только после правильного ответа):</label>
+          <textarea rows="2"
+                    placeholder="Например: Се + Вас + Топ + Поль = Севастополь"
+                    oninput="updateExplanation(${level.id}, '${rebus.id}', this.value)">${escHtml(rebus.explanation || "")}</textarea>
+        </div>
         <div class="rebus-images">${imagesHtml}</div>
-        <div class="upload-controls">
+        <div class="rebus-texts">${textsHtml}</div>
+        <div class="add-text-row">
+          <textarea rows="1" id="newtext-${rebus.id}"
+                    placeholder="Новое текстовое задание..."></textarea>
+          <button class="small secondary"
+                  onclick="addText(${level.id}, '${rebus.id}')">
+            + Текст
+          </button>
+        </div>
+        <div class="upload-controls" style="margin-top:10px;">
           <button class="small secondary" onclick="this.nextElementSibling.click()">
             Загрузить файлы
           </button>
@@ -786,6 +946,15 @@ function updateAnswer(levelId, rebusId, value) {
   }, 500);
 }
 
+const explanationTimers = {};
+function updateExplanation(levelId, rebusId, value) {
+  clearTimeout(explanationTimers[rebusId]);
+  explanationTimers[rebusId] = setTimeout(async () => {
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}`, "PUT", { explanation: value });
+    setStatus("Пояснение сохранено", true);
+  }, 500);
+}
+
 async function uploadFiles(levelId, rebusId, input) {
   if (!input.files.length) return;
   const count = input.files.length;
@@ -826,6 +995,33 @@ async function deleteImage(levelId, rebusId, imageName) {
   setStatus("Изображение удалено", true);
 }
 
+async function addText(levelId, rebusId) {
+  const ta = document.getElementById(`newtext-${rebusId}`);
+  const text = (ta?.value || "").trim();
+  if (!text) return;
+  setStatus("Добавление текста...");
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/texts`, "POST", { text });
+  render();
+  setStatus("Текст добавлен", true);
+}
+
+async function deleteText(levelId, rebusId, idx) {
+  appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/texts/${idx}`, "DELETE");
+  render();
+  setStatus("Текст удалён", true);
+}
+
+const textTimers = {};
+function updateText(levelId, rebusId, idx, value) {
+  if (!value.trim()) return;
+  const key = `${rebusId}:${idx}`;
+  clearTimeout(textTimers[key]);
+  textTimers[key] = setTimeout(async () => {
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/texts/${idx}`, "PUT", { text: value });
+    setStatus("Текст сохранён", true);
+  }, 500);
+}
+
 async function moveRebus(fromLevel, rebusId, toLevel) {
   if (!toLevel) return;
   appData = await api(`/api/levels/${fromLevel}/rebuses/${rebusId}/move/${toLevel}`, "POST");
@@ -841,6 +1037,7 @@ function openPreview(rebusId, levelId) {
   if (!rebus) return;
 
   const imagesEl = document.getElementById("preview-images");
+  const textsEl = document.getElementById("preview-texts");
   const answerEl = document.getElementById("preview-answer");
   const hintEl = document.getElementById("preview-hint");
 
@@ -852,6 +1049,11 @@ function openPreview(rebusId, levelId) {
     ).join("");
   }
 
+  const texts = rebus.texts || [];
+  textsEl.innerHTML = texts
+    .map(t => `<div class="preview-text">${escHtml(t)}</div>`)
+    .join("");
+
   const answer = rebus.answer || "";
   if (answer) {
     answerEl.innerHTML = answer.split("").map(() =>
@@ -861,6 +1063,18 @@ function openPreview(rebusId, levelId) {
   } else {
     answerEl.innerHTML = '<div class="empty-msg">Отгадка не задана</div>';
     hintEl.textContent = "";
+  }
+
+  const explEl = document.getElementById("preview-explanation");
+  const explanation = (rebus.explanation || "").trim();
+  if (explanation) {
+    explEl.innerHTML =
+      `<span class="preview-explanation-label">Пояснение (после отгадывания)</span>` +
+      escHtml(explanation);
+    explEl.style.display = "block";
+  } else {
+    explEl.style.display = "none";
+    explEl.innerHTML = "";
   }
 
   document.getElementById("preview-modal").classList.add("active");

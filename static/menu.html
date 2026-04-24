@@ -546,6 +546,26 @@
       padding: 30px;
     }
 
+    .play-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .play-texts .play-text {
+      background: var(--paper-light);
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: var(--brown);
+      font-size: 16px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+    }
+
     .play-answer {
       display: flex;
       justify-content: center;
@@ -790,6 +810,46 @@
     }
     .solved-banner.show { display: block; }
 
+    .play-explanation {
+      display: none;
+      position: relative;
+      background: var(--paper-light);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 16px 18px 16px 22px;
+      margin: 4px 0 16px;
+      color: var(--brown);
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+      animation: explFadeIn 0.4s ease;
+    }
+    .play-explanation.show { display: block; }
+    .play-explanation::before {
+      content: "★";
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      color: var(--gold-dark);
+      font-size: 14px;
+    }
+    .play-explanation .play-explanation-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    @keyframes explFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     /* Loading / error */
     .loading, .error {
       text-align: center;
@@ -879,7 +939,9 @@
     <h3 id="play-title">Ребус</h3>
     <div class="modal-sub" id="play-subtitle"></div>
     <div class="play-images" id="play-images"></div>
+    <div class="play-texts" id="play-texts"></div>
     <div class="solved-banner" id="solved-banner">★ Ответ&nbsp;верен!&nbsp;★</div>
+    <div class="play-explanation" id="play-explanation"></div>
     <div class="play-feedback" id="play-feedback">&nbsp;</div>
     <div class="play-attempts" id="play-attempts">
       <div class="play-attempts-label">
@@ -1123,9 +1185,21 @@ function openPlay(rebusId, levelId) {
   document.getElementById("play-subtitle").textContent = level.name;
 
   const imgEl = document.getElementById("play-images");
-  imgEl.innerHTML = rebus.images.length === 0
-    ? `<div class="empty">Изображения не загружены</div>`
-    : rebus.images.map(img => `<img src="/images/${encodeURIComponent(img)}" alt="" />`).join("");
+  const texts = rebus.texts || [];
+  if (rebus.images.length === 0 && texts.length === 0) {
+    imgEl.innerHTML = `<div class="empty">Задание не загружено</div>`;
+  } else if (rebus.images.length === 0) {
+    imgEl.innerHTML = "";
+  } else {
+    imgEl.innerHTML = rebus.images
+      .map(img => `<img src="/images/${encodeURIComponent(img)}" alt="" />`)
+      .join("");
+  }
+
+  const textsEl = document.getElementById("play-texts");
+  textsEl.innerHTML = texts
+    .map(t => `<div class="play-text">${escHtml(t)}</div>`)
+    .join("");
 
   renderAnswerInput(rebus);
 
@@ -1142,12 +1216,37 @@ function openPlay(rebusId, levelId) {
   document.getElementById("play-attempts").classList.toggle("has-items", savedAttempts.length > 0);
   document.getElementById("solved-banner").classList.remove("show");
 
+  const alreadySolved = (progress[rebus.id]?.solveCount || 0) > 0;
+  if (alreadySolved) {
+    document.getElementById("solved-banner").classList.add("show");
+    document.querySelectorAll("#play-answer .letter-box").forEach((b, i) => {
+      b.value = (target[i] || "").toUpperCase();
+      b.classList.add("correct");
+      b.disabled = true;
+    });
+  }
+  showExplanation(rebus, alreadySolved);
+
   document.getElementById("play-modal").classList.add("active");
-  // Focus first box
+  // Focus first empty box
   setTimeout(() => {
     const first = document.querySelector(".letter-box:not([disabled])");
     first?.focus();
   }, 30);
+}
+
+function showExplanation(rebus, visible) {
+  const el = document.getElementById("play-explanation");
+  const text = (rebus.explanation || "").trim();
+  if (visible && text) {
+    el.innerHTML =
+      `<span class="play-explanation-label">Пояснение к&nbsp;разгадке</span>` +
+      escHtml(text);
+    el.classList.add("show");
+  } else {
+    el.classList.remove("show");
+    el.innerHTML = "";
+  }
 }
 
 function renderAnswerInput(rebus) {
@@ -1203,6 +1302,7 @@ function checkAnswer(ev) {
     feedback.textContent = "Ответ верен!";
     feedback.className = "play-feedback ok";
     document.getElementById("solved-banner").classList.add("show");
+    showExplanation(rebus, true);
     render();
   } else if (typed.length < target.length) {
     feedback.textContent = "Заполните все клетки";

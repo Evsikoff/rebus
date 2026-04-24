@@ -19,7 +19,14 @@ os.makedirs(IMAGES_DIR, exist_ok=True)
 
 def load_data():
     with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    for level in data.get("levels", []):
+        for rebus in level.get("rebuses", []):
+            if "texts" not in rebus or not isinstance(rebus["texts"], list):
+                rebus["texts"] = []
+            if "explanation" not in rebus or not isinstance(rebus["explanation"], str):
+                rebus["explanation"] = ""
+    return data
 
 
 def save_data(data):
@@ -107,6 +114,8 @@ def add_rebus(level_id):
                 "id": rebus_id,
                 "answer": body.get("answer", ""),
                 "images": [],
+                "texts": [],
+                "explanation": "",
                 "order": len(level["rebuses"])
             })
             save_data(data)
@@ -126,6 +135,8 @@ def update_rebus(level_id, rebus_id):
                         rebus["answer"] = body["answer"]
                     if "order" in body:
                         rebus["order"] = body["order"]
+                    if "explanation" in body:
+                        rebus["explanation"] = body["explanation"] or ""
                     save_data(data)
                     return jsonify(data)
     return jsonify({"error": "Not found"}), 404
@@ -273,6 +284,60 @@ def move_rebus(from_level, rebus_id, to_level):
                 break
     save_data(data)
     return jsonify(data)
+
+
+@app.route("/api/levels/<int:level_id>/rebuses/<rebus_id>/texts", methods=["POST"])
+def add_text(level_id, rebus_id):
+    data = load_data()
+    body = request.get_json() or {}
+    text = (body.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Empty text"}), 400
+    for level in data["levels"]:
+        if level["id"] == level_id:
+            for rebus in level["rebuses"]:
+                if rebus["id"] == rebus_id:
+                    rebus.setdefault("texts", []).append(text)
+                    save_data(data)
+                    return jsonify(data)
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/api/levels/<int:level_id>/rebuses/<rebus_id>/texts/<int:idx>", methods=["PUT"])
+def update_text(level_id, rebus_id, idx):
+    data = load_data()
+    body = request.get_json() or {}
+    text = (body.get("text") or "").strip()
+    for level in data["levels"]:
+        if level["id"] == level_id:
+            for rebus in level["rebuses"]:
+                if rebus["id"] == rebus_id:
+                    texts = rebus.setdefault("texts", [])
+                    if 0 <= idx < len(texts):
+                        if text:
+                            texts[idx] = text
+                        else:
+                            texts.pop(idx)
+                        save_data(data)
+                        return jsonify(data)
+                    return jsonify({"error": "Index out of range"}), 400
+    return jsonify({"error": "Not found"}), 404
+
+
+@app.route("/api/levels/<int:level_id>/rebuses/<rebus_id>/texts/<int:idx>", methods=["DELETE"])
+def delete_text(level_id, rebus_id, idx):
+    data = load_data()
+    for level in data["levels"]:
+        if level["id"] == level_id:
+            for rebus in level["rebuses"]:
+                if rebus["id"] == rebus_id:
+                    texts = rebus.setdefault("texts", [])
+                    if 0 <= idx < len(texts):
+                        texts.pop(idx)
+                        save_data(data)
+                        return jsonify(data)
+                    return jsonify({"error": "Index out of range"}), 400
+    return jsonify({"error": "Not found"}), 404
 
 
 @app.route("/images/<filename>")

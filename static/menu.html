@@ -1278,7 +1278,9 @@ function openPlay(rebusId, levelId) {
   currentRebus = { rebus, level, index: idx };
 
   bumpLaunches(rebus.id);
-  setState(rebus.id, "open");
+  if (getState(rebus.id) !== "solved") {
+    setState(rebus.id, "open");
+  }
 
   document.getElementById("play-title").textContent = `Ребус №${idx + 1}`;
   document.getElementById("play-subtitle").textContent = level.name;

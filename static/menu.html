@@ -546,6 +546,135 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
 
+    .play-images img.landscape {
+      width: 260px;
+      height: 156px;
+      border-color: var(--gold-bright);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.28),
+        0 0 0 1px var(--gold-dark);
+      cursor: zoom-in;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .play-images img.landscape:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.35),
+        0 0 0 1px var(--gold-bright);
+    }
+
+    /* === IMAGE VIEWER === */
+    .viewer-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8,4,0,0.94);
+      z-index: 2000;
+      flex-direction: column;
+    }
+    .viewer-modal.active { display: flex; }
+
+    .viewer-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .viewer-img {
+      max-width: 92%;
+      max-height: 92%;
+      transform-origin: center center;
+      transition: transform 0.18s ease;
+      cursor: grab;
+      -webkit-user-drag: none;
+      user-select: none;
+      box-shadow: 0 0 0 1px var(--gold-dark), 0 12px 36px rgba(0,0,0,0.6);
+    }
+    .viewer-img.dragging { cursor: grabbing; transition: none; }
+
+    .viewer-toolbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+      border-top: 1px solid var(--gold-dark);
+    }
+
+    .viewer-btn {
+      background: var(--paper);
+      border: 2px solid var(--gold);
+      color: var(--brown);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+    .viewer-btn:hover:not(:disabled) {
+      background: var(--gold);
+      color: var(--paper);
+    }
+    .viewer-btn:active:not(:disabled) { transform: scale(0.94); }
+    .viewer-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .viewer-counter {
+      color: var(--gold-bright);
+      font-size: 13px;
+      letter-spacing: 2px;
+      min-width: 64px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .viewer-sep {
+      width: 1px;
+      height: 26px;
+      background: var(--gold-dark);
+      opacity: 0.5;
+      margin: 0 4px;
+    }
+
+    .viewer-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: rgba(0,0,0,0.45);
+      border: 2px solid var(--gold);
+      color: var(--gold-bright);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.15s, color 0.15s;
+    }
+    .viewer-close:hover {
+      background: var(--gold);
+      color: var(--brown);
+    }
+
+    @media (max-width: 640px) {
+      .viewer-btn { width: 38px; height: 38px; font-size: 18px; }
+      .viewer-toolbar { gap: 6px; padding: 10px 8px; }
+      .viewer-counter { font-size: 12px; min-width: 50px; }
+    }
+
     .play-images .empty {
       color: var(--brown-soft);
       font-style: italic;
@@ -945,6 +1074,7 @@
       .tile { width: 84px; height: 94px; }
       .hex-inner { font-size: 26px; }
       .play-images img { width: 110px; height: 110px; }
+      .play-images img.landscape { width: 200px; height: 120px; }
       .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 14px; }
       .stat-value { font-size: 22px; }
       .stat-label { font-size: 10px; letter-spacing: 1.5px; }
@@ -1044,6 +1174,25 @@
         <button type="button" class="btn secondary" onclick="closePlay()">Закрыть</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Image Viewer -->
+<div class="viewer-modal" id="viewer-modal" role="dialog" aria-label="Просмотрщик изображений">
+  <button class="viewer-close" id="viewer-close" aria-label="Закрыть">&times;</button>
+  <div class="viewer-stage" id="viewer-stage">
+    <img class="viewer-img" id="viewer-img" alt="" draggable="false" />
+  </div>
+  <div class="viewer-toolbar">
+    <button class="viewer-btn" id="viewer-prev" aria-label="Предыдущее изображение" title="Предыдущее">&#8249;</button>
+    <span class="viewer-counter" id="viewer-counter">1 / 1</span>
+    <button class="viewer-btn" id="viewer-next" aria-label="Следующее изображение" title="Следующее">&#8250;</button>
+    <span class="viewer-sep"></span>
+    <button class="viewer-btn" id="viewer-zoom-out" aria-label="Уменьшить" title="Уменьшить">&minus;</button>
+    <button class="viewer-btn" id="viewer-zoom-reset" aria-label="Сбросить масштаб" title="Сбросить">&#9678;</button>
+    <button class="viewer-btn" id="viewer-zoom-in" aria-label="Увеличить" title="Увеличить">+</button>
+    <span class="viewer-sep"></span>
+    <button class="viewer-btn" id="viewer-rotate" aria-label="Повернуть" title="Повернуть на 90&deg;">&#8635;</button>
   </div>
 </div>
 
@@ -1293,8 +1442,19 @@ function openPlay(rebusId, levelId) {
     imgEl.innerHTML = "";
   } else {
     imgEl.innerHTML = rebus.images
-      .map(img => `<img src="/images/${encodeURIComponent(img)}" alt="" />`)
+      .map((img, i) => {
+        const landscape = isLandscapeImage(img);
+        const cls = landscape ? ' class="landscape"' : '';
+        const idxAttr = landscape ? ` data-viewer-idx="${i}"` : '';
+        return `<img src="/images/${encodeURIComponent(img)}" alt=""${cls}${idxAttr} />`;
+      })
       .join("");
+    imgEl.querySelectorAll("img.landscape[data-viewer-idx]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = Number(el.getAttribute("data-viewer-idx")) || 0;
+        openViewer(rebus.images, idx);
+      });
+    });
   }
 
   const textsEl = document.getElementById("play-texts");
@@ -1451,12 +1611,148 @@ document.getElementById("play-modal").addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
-    if (document.getElementById("iframe-modal").classList.contains("active")) {
+    if (document.getElementById("viewer-modal").classList.contains("active")) {
+      closeViewer();
+    } else if (document.getElementById("iframe-modal").classList.contains("active")) {
       closeIframePlay();
     } else {
       closePlay();
     }
+    return;
   }
+  if (!document.getElementById("viewer-modal").classList.contains("active")) return;
+  if (e.key === "ArrowLeft")  { viewerPrev(); e.preventDefault(); }
+  if (e.key === "ArrowRight") { viewerNext(); e.preventDefault(); }
+  if (e.key === "+" || e.key === "=") { viewerZoom(0.25); e.preventDefault(); }
+  if (e.key === "-" || e.key === "_") { viewerZoom(-0.25); e.preventDefault(); }
+  if (e.key === "0")          { viewerResetTransform(); applyViewerTransform(); e.preventDefault(); }
+  if (e.key === "r" || e.key === "R") { viewerRotate(); e.preventDefault(); }
+});
+
+// === Image Viewer ===
+const viewerState = {
+  images: [],
+  index: 0,
+  scale: 1,
+  rotation: 0,
+  panX: 0,
+  panY: 0,
+  dragging: false,
+  dragStartX: 0,
+  dragStartY: 0,
+  dragOriginX: 0,
+  dragOriginY: 0,
+};
+
+function viewerResetTransform() {
+  viewerState.scale = 1;
+  viewerState.rotation = 0;
+  viewerState.panX = 0;
+  viewerState.panY = 0;
+}
+
+function applyViewerTransform() {
+  const img = document.getElementById("viewer-img");
+  img.style.transform =
+    `translate(${viewerState.panX}px, ${viewerState.panY}px) ` +
+    `scale(${viewerState.scale}) rotate(${viewerState.rotation}deg)`;
+}
+
+function updateViewer() {
+  const img = document.getElementById("viewer-img");
+  const file = viewerState.images[viewerState.index];
+  img.src = `/images/${encodeURIComponent(file)}`;
+  applyViewerTransform();
+  document.getElementById("viewer-counter").textContent =
+    `${viewerState.index + 1} / ${viewerState.images.length}`;
+  const multi = viewerState.images.length > 1;
+  document.getElementById("viewer-prev").disabled = !multi;
+  document.getElementById("viewer-next").disabled = !multi;
+}
+
+function openViewer(images, startIndex) {
+  viewerState.images = Array.isArray(images) ? images.slice() : [];
+  if (viewerState.images.length === 0) return;
+  viewerState.index = Math.max(0, Math.min(startIndex || 0, viewerState.images.length - 1));
+  viewerResetTransform();
+  updateViewer();
+  document.getElementById("viewer-modal").classList.add("active");
+}
+
+function closeViewer() {
+  document.getElementById("viewer-modal").classList.remove("active");
+  document.getElementById("viewer-img").src = "";
+  viewerState.images = [];
+}
+
+function viewerZoom(delta) {
+  const next = viewerState.scale + delta;
+  viewerState.scale = Math.max(0.2, Math.min(8, next));
+  if (viewerState.scale <= 1) { viewerState.panX = 0; viewerState.panY = 0; }
+  applyViewerTransform();
+}
+
+function viewerRotate() {
+  viewerState.rotation = (viewerState.rotation + 90) % 360;
+  applyViewerTransform();
+}
+
+function viewerPrev() {
+  if (viewerState.images.length < 2) return;
+  viewerState.index = (viewerState.index - 1 + viewerState.images.length) % viewerState.images.length;
+  viewerResetTransform();
+  updateViewer();
+}
+
+function viewerNext() {
+  if (viewerState.images.length < 2) return;
+  viewerState.index = (viewerState.index + 1) % viewerState.images.length;
+  viewerResetTransform();
+  updateViewer();
+}
+
+document.getElementById("viewer-close").addEventListener("click", closeViewer);
+document.getElementById("viewer-prev").addEventListener("click", viewerPrev);
+document.getElementById("viewer-next").addEventListener("click", viewerNext);
+document.getElementById("viewer-zoom-in").addEventListener("click", () => viewerZoom(0.25));
+document.getElementById("viewer-zoom-out").addEventListener("click", () => viewerZoom(-0.25));
+document.getElementById("viewer-zoom-reset").addEventListener("click", () => {
+  viewerResetTransform();
+  applyViewerTransform();
+});
+document.getElementById("viewer-rotate").addEventListener("click", viewerRotate);
+
+document.getElementById("viewer-modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeViewer();
+});
+
+const viewerStage = document.getElementById("viewer-stage");
+viewerStage.addEventListener("wheel", e => {
+  e.preventDefault();
+  viewerZoom(e.deltaY < 0 ? 0.2 : -0.2);
+}, { passive: false });
+
+const viewerImgEl = document.getElementById("viewer-img");
+viewerImgEl.addEventListener("mousedown", e => {
+  if (viewerState.scale <= 1) return;
+  e.preventDefault();
+  viewerState.dragging = true;
+  viewerState.dragStartX = e.clientX;
+  viewerState.dragStartY = e.clientY;
+  viewerState.dragOriginX = viewerState.panX;
+  viewerState.dragOriginY = viewerState.panY;
+  viewerImgEl.classList.add("dragging");
+});
+window.addEventListener("mousemove", e => {
+  if (!viewerState.dragging) return;
+  viewerState.panX = viewerState.dragOriginX + (e.clientX - viewerState.dragStartX);
+  viewerState.panY = viewerState.dragOriginY + (e.clientY - viewerState.dragStartY);
+  applyViewerTransform();
+});
+window.addEventListener("mouseup", () => {
+  if (!viewerState.dragging) return;
+  viewerState.dragging = false;
+  viewerImgEl.classList.remove("dragging");
 });
 
 // === iframe Rebus ===
@@ -1604,6 +1900,9 @@ function computeLetterStatuses(guess, target) {
 }
 
 // === Utils ===
+function isLandscapeImage(filename) {
+  return /_w\.[a-z0-9]+$/i.test(filename || "");
+}
 function escHtml(s) {
   const d = document.createElement("div");
   d.textContent = s == null ? "" : String(s);

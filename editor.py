@@ -13,6 +13,8 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 IMAGES_DIR = os.path.join(DATA_DIR, "images")
 DATA_FILE = os.path.join(DATA_DIR, "rebuses.json")
 IMAGE_SIZE = (200, 200)
+LANDSCAPE_IMAGE_SIZE = (400, 240)
+LANDSCAPE_SUFFIX = "_w"
 
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
@@ -36,15 +38,28 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def process_image(image_bytes):
-    """Resize image to 200x200 and save as PNG. Returns filename."""
+def process_image(image_bytes, landscape=False):
+    """Resize image and save as PNG. Returns filename.
+    Square images are 200x200; landscape images are 400x240 with a `_w` suffix
+    so the orientation can be detected from the filename alone.
+    """
     img = Image.open(io.BytesIO(image_bytes))
     img = img.convert("RGBA")
-    img = img.resize(IMAGE_SIZE, Image.LANCZOS)
-    filename = f"{uuid.uuid4().hex}.png"
+    target_size = LANDSCAPE_IMAGE_SIZE if landscape else IMAGE_SIZE
+    img = img.resize(target_size, Image.LANCZOS)
+    suffix = LANDSCAPE_SUFFIX if landscape else ""
+    filename = f"{uuid.uuid4().hex}{suffix}.png"
     filepath = os.path.join(IMAGES_DIR, filename)
     img.save(filepath, "PNG")
     return filename
+
+
+def _is_landscape_flag(value):
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    return str(value).lower() in ("1", "true", "yes", "on", "landscape")
 
 
 @app.route("/")
@@ -171,7 +186,10 @@ def upload_image(level_id, rebus_id):
     if not files:
         return jsonify({"error": "No images provided"}), 400
 
-    filenames = [process_image(f.read()) for f in files]
+    landscape = _is_landscape_flag(
+        request.form.get("landscape") or request.args.get("landscape")
+    )
+    filenames = [process_image(f.read(), landscape=landscape) for f in files]
 
     for level in data["levels"]:
         if level["id"] == level_id:
@@ -207,10 +225,11 @@ def upload_image_url(level_id, rebus_id):
     if not url:
         return jsonify({"error": "No URL provided"}), 400
 
+    landscape = _is_landscape_flag(body.get("landscape"))
     try:
         resp = requests.get(url, timeout=15)
         resp.raise_for_status()
-        filename = process_image(resp.content)
+        filename = process_image(resp.content, landscape=landscape)
     except Exception as e:
         return jsonify({"error": f"Failed to download image: {e}"}), 400
 

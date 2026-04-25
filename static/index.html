@@ -313,6 +313,28 @@
       transition: transform 0.15s, box-shadow 0.15s;
     }
 
+    .rebus-img-wrapper.landscape {
+      width: 170px;
+      height: 102px;
+      border-color: #b58a2e;
+      box-shadow: 0 0 0 1px rgba(212,164,55,0.4) inset;
+    }
+
+    .rebus-img-wrapper .kind-badge {
+      position: absolute;
+      bottom: 2px;
+      left: 2px;
+      background: rgba(58,42,10,0.78);
+      color: #ffd34d;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+
     .rebus-img-wrapper:active { cursor: grabbing; }
 
     .rebus-img-wrapper.img-dragging {
@@ -516,6 +538,12 @@
       border: 3px solid #c4a35a;
       border-radius: 6px;
       background: #fff;
+    }
+
+    .preview-images img.landscape {
+      width: 320px;
+      height: 192px;
+      border-color: #b58a2e;
     }
 
     .preview-texts {
@@ -858,13 +886,17 @@ function render() {
 }
 
 function renderRebus(rebus, index, level) {
-  const imagesHtml = rebus.images.map(img => `
-    <div class="rebus-img-wrapper" draggable="true" data-img="${img}"
+  const imagesHtml = rebus.images.map(img => {
+    const wide = isLandscapeImage(img);
+    return `
+    <div class="rebus-img-wrapper${wide ? ' landscape' : ''}" draggable="true" data-img="${img}"
          data-level-id="${level.id}" data-rebus-id="${rebus.id}">
       <img src="/images/${img}" alt="rebus image" draggable="false" />
+      ${wide ? '<span class="kind-badge">альбом</span>' : ''}
       <button class="delete-img" onclick="event.stopPropagation(); deleteImage(${level.id}, '${rebus.id}', '${img}')">&times;</button>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   const texts = rebus.texts || [];
   const textsHtml = texts.map((t, i) => `
@@ -922,12 +954,23 @@ function renderRebus(rebus, index, level) {
             Загрузить файлы
           </button>
           <input type="file" accept="image/*" multiple
-                 onchange="uploadFiles(${level.id}, '${rebus.id}', this)" />
+                 onchange="uploadFiles(${level.id}, '${rebus.id}', this, false)" />
+          <button class="small secondary" onclick="this.nextElementSibling.click()"
+                  title="Альбомные изображения сохраняются в формате 400×240 — шире и крупнее обычных">
+            Загрузить альбомные
+          </button>
+          <input type="file" accept="image/*" multiple
+                 onchange="uploadFiles(${level.id}, '${rebus.id}', this, true)" />
           <input type="text" class="url-input" placeholder="URL изображения..."
                  id="url-${rebus.id}" />
           <button class="small secondary"
-                  onclick="uploadUrl(${level.id}, '${rebus.id}')">
+                  onclick="uploadUrl(${level.id}, '${rebus.id}', false)">
             Загрузить по URL
+          </button>
+          <button class="small secondary"
+                  onclick="uploadUrl(${level.id}, '${rebus.id}', true)"
+                  title="Загрузить по URL как альбомное изображение">
+            Альбомное по URL
           </button>
         </div>
       </div>
@@ -953,6 +996,10 @@ function escHtml(s) {
   const d = document.createElement("div");
   d.textContent = s || "";
   return d.innerHTML;
+}
+
+function isLandscapeImage(filename) {
+  return /_w\.[a-z0-9]+$/i.test(filename || "");
 }
 
 // === Actions ===
@@ -1024,17 +1071,20 @@ function updateExplanation(levelId, rebusId, value) {
   }, 500);
 }
 
-async function uploadFiles(levelId, rebusId, input) {
+async function uploadFiles(levelId, rebusId, input, landscape = false) {
   if (!input.files.length) return;
   const count = input.files.length;
-  setStatus(`<span class="loading-spinner"></span>Загрузка ${count} изображ...`);
+  const kind = landscape ? "альбомных" : "изображ";
+  setStatus(`<span class="loading-spinner"></span>Загрузка ${count} ${kind}...`);
   const fd = new FormData();
   for (const file of input.files) {
     fd.append("image", file);
   }
+  if (landscape) fd.append("landscape", "1");
   appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/upload`, "POST", fd);
+  input.value = "";
   render();
-  setStatus(`Загружено ${count} изображение(й)`, true);
+  setStatus(`Загружено ${count} ${landscape ? 'альбомное(ых)' : 'изображение(й)'}`, true);
 }
 
 async function reorderImages(levelId, rebusId, newOrder) {
@@ -1043,15 +1093,16 @@ async function reorderImages(levelId, rebusId, newOrder) {
   setStatus("Порядок изображений обновлён", true);
 }
 
-async function uploadUrl(levelId, rebusId) {
+async function uploadUrl(levelId, rebusId, landscape = false) {
   const urlInput = document.getElementById(`url-${rebusId}`);
   const url = urlInput.value.trim();
   if (!url) return alert("Введите URL изображения");
   setStatus('<span class="loading-spinner"></span>Загрузка по URL...');
   try {
-    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/upload-url`, "POST", { url });
+    appData = await api(`/api/levels/${levelId}/rebuses/${rebusId}/upload-url`, "POST", { url, landscape });
+    urlInput.value = "";
     render();
-    setStatus("Изображение загружено по URL", true);
+    setStatus(landscape ? "Альбомное изображение загружено по URL" : "Изображение загружено по URL", true);
   } catch (e) {
     setStatus("Ошибка загрузки по URL");
     alert("Не удалось загрузить изображение по URL");
@@ -1119,7 +1170,7 @@ function openPreview(rebusId, levelId) {
     imagesEl.innerHTML = '<div class="empty-msg">Нет изображений</div>';
   } else {
     imagesEl.innerHTML = rebus.images.map(img =>
-      `<img src="/images/${img}" alt="rebus" />`
+      `<img src="/images/${img}" alt="rebus"${isLandscapeImage(img) ? ' class="landscape"' : ''} />`
     ).join("");
   }
 
